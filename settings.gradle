@@ -1,0 +1,3 @@
+rootProject.name = 'QQLite'
+
+include ':module', ':hideapi'
