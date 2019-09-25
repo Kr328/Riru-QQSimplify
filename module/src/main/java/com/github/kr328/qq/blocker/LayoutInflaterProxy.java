@@ -11,7 +11,7 @@ import org.xmlpull.v1.XmlPullParser;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.HashMap;
+import java.util.Map;
 
 class LayoutInflaterProxy extends PhoneLayoutInflater {
     private static Method methodGetOuterContext;
@@ -72,7 +72,7 @@ class LayoutInflaterProxy extends PhoneLayoutInflater {
         Field fetchersField = registryClass.getDeclaredField("SYSTEM_SERVICE_FETCHERS");
         fetchersField.setAccessible(true);
 
-        HashMap services = (HashMap) fetchersField.get(null);
+        Map services = (Map) fetchersField.get(null);
         if ( services == null )
             throw new NoSuchFieldException("services not found");
 
