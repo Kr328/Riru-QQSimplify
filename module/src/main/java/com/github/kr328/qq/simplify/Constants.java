@@ -1,4 +1,4 @@
-package com.github.kr328.qq.blocker;
+package com.github.kr328.qq.simplify;
 
 public class Constants {
     public static final String TAG = "QQLite";

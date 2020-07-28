@@ -1,4 +1,4 @@
-package com.github.kr328.qq.blocker.proxy;
+package com.github.kr328.qq.simplify.proxy;
 
 public class StackUtils {
     public static boolean hasMethodOnStack(Thread thread, String method) {

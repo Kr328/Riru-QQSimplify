@@ -1,4 +1,4 @@
-package com.github.kr328.qq.blocker.proxy;
+package com.github.kr328.qq.simplify.proxy;
 
 import android.os.*;
 

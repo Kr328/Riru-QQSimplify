@@ -1,9 +1,9 @@
-package com.github.kr328.qq.blocker.proxy;
+package com.github.kr328.qq.simplify.proxy;
 
 import android.os.IBinder;
 import android.os.IInterface;
 import android.util.Log;
-import com.github.kr328.qq.blocker.Constants;
+import com.github.kr328.qq.simplify.Constants;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;

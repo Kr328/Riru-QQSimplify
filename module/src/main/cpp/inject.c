@@ -1,8 +1,6 @@
 #include "inject.h"
 #include "log.h"
 
-#include "riru.h"
-
 void load_and_invoke_dex(JNIEnv *env, const char *dex, const char *clazz, const char *method, const char *argument) {
     // get system class loader
     jclass    classClassLoader           = (*env)->FindClass(env ,"java/lang/ClassLoader");

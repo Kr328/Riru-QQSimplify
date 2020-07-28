@@ -1,8 +1,8 @@
-package com.github.kr328.qq.blocker.proxy;
+package com.github.kr328.qq.simplify.proxy;
 
 import android.os.Binder;
 import android.util.Log;
-import com.github.kr328.qq.blocker.Constants;
+import com.github.kr328.qq.simplify.Constants;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

@@ -1,4 +1,4 @@
-package com.github.kr328.qq.blocker;
+package com.github.kr328.qq.simplify;
 
 import android.util.Log;
 import android.view.View;

@@ -7,15 +7,14 @@
 #include <android/log.h>
 #include <sys/system_properties.h>
 
-#include "riru.h"
 #include "log.h"
 #include "utils.h"
 #include "inject.h"
 
 #define EXPORT __attribute__((visibility("default")))
 
-#define DEX_PATH          "/system/framework/boot-qq-lite.jar"
-#define INJECT_CLASS_PATH "com/github/kr328/qq/blocker/Injector"
+#define DEX_PATH          "/system/framework/boot-qq-simplify.jar"
+#define INJECT_CLASS_PATH "com/github/kr328/qq/simplify/Injector"
 #define INJECT_METHOD_NAME "inject"
 #define TARGET_PACKAGE "com.tencent.mobileqq"
 
@@ -73,9 +72,4 @@ int specializeAppProcessPost(JNIEnv *env, jclass clazz, jint res) {
     if ( is_app_need_hook() )
         load_and_invoke_dex(env, DEX_PATH, INJECT_CLASS_PATH, INJECT_METHOD_NAME, "");
     return 0;
-}
-
-EXPORT
-void onModuleLoaded() {
-    riru_set_module_name("qq_view_blocker");
 }
