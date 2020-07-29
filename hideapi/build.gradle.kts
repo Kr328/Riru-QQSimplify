@@ -12,14 +12,11 @@ android {
 
         versionCode = 10000
         versionName = "1.0.0"
-
-        consumerProguardFiles("consumer-rules.pro")
     }
 
     buildTypes {
         named("release") {
             isMinifyEnabled = false
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
 

@@ -52,39 +52,6 @@ public final class UiUtils {
         }
     }
 
-    static View[] matchChain(Matcher[] chain, View view) {
-        if ( !chain[0].match(view) )
-            return null;
-
-        View[] result = new View[chain.length];
-
-        result[0] = view;
-
-        for ( int current = 1; current < chain.length ; current++ ) {
-            if (!(view instanceof ViewGroup))
-                return null;
-
-            ViewGroup group = (ViewGroup) view;
-            Matcher matcher = chain[current];
-
-            boolean matched = false;
-
-            for ( int i = 0 ; i < group.getChildCount() ; i++ ) {
-                if ( matcher.match(group.getChildAt(i)) ) {
-                    view = group.getChildAt(i);
-                    result[current] = view;
-                    matched = true;
-                    break;
-                }
-            }
-
-            if ( !matched )
-                return null;
-        }
-
-        return result;
-    }
-
     static void walk(Matcher[] chains, View root, Consumer<View[]> consumer) {
         if ( !chains[0].match(root) )
             return;
@@ -117,25 +84,22 @@ public final class UiUtils {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    static <T> ArrayList<T> findViewByType(View view, Class<T> clazz, int deep) {
-        ArrayList<T> result = new ArrayList<>(0);
+    static void attachLongClickDump(View view, String text) {
+        final String currentText = text + "/" + view.getClass().getName();
 
-        if ( deep <= 0 )
-            return result;
+        view.setOnLongClickListener((v) -> {
+            Log.d(Constants.TAG, currentText);
 
-        if ( clazz.isInstance(view) )
-            result.add((T) view);
+            return false;
+        });
 
-        if (!( view instanceof ViewGroup) )
-            return result;
+        if (view instanceof ViewGroup) {
+            ViewGroup group = (ViewGroup) view;
 
-        ViewGroup vg = (ViewGroup) view;
-
-        for ( int i = 0 ; i < vg.getChildCount() ; i++ )
-            result.addAll(findViewByType(vg.getChildAt(i), clazz, deep - 1));
-
-        return result;
+            for ( int i = 0 ; i < group.getChildCount() ; i++ ) {
+                attachLongClickDump(group.getChildAt(i), currentText);
+            }
+        }
     }
 
     static void attachAllLayoutChanged(View view, ViewGroup.OnHierarchyChangeListener listener) {

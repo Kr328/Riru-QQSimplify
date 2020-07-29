@@ -5,6 +5,10 @@ import android.util.Log;
 @SuppressWarnings("unused")
 public class Injector {
     public static void inject(String argument) {
+        doInject();
+    }
+
+    private static void doInject() {
         try {
             LayoutInflaterProxy.install();
         } catch (Exception e) {

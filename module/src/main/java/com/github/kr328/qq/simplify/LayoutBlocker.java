@@ -9,12 +9,9 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import java.util.ArrayList;
-import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 class LayoutBlocker {
-    private static final int MAX_DEEP = 30;
-
     private static final UiUtils.Matcher[] MINI_APP_CHAIN = new UiUtils.Matcher[]{
             new UiUtils.ClassNameMatcher("com.tencent.mobileqq.mini.entry.desktop.MiniAppDesktopLayout"),
             new UiUtils.ClassMatcher(FrameLayout.class),
@@ -33,6 +30,17 @@ class LayoutBlocker {
             new UiUtils.ClassMatcher(android.widget.RelativeLayout.class),
             new UiUtils.ClassMatcher(android.widget.RelativeLayout.class),
             new UiUtils.ClassMatcher(android.widget.ImageView.class),
+    };
+
+    private static final UiUtils.Matcher[] PLAY_CHAIN = new UiUtils.Matcher[] {
+            new UiUtils.ClassNameMatcher("com.tencent.widget.FitSystemWindowsRelativeLayout"),
+            new UiUtils.ClassNameMatcher("com.tencent.mobileqq.widget.navbar.NavBarAIO"),
+            new UiUtils.ClassMatcher(android.widget.RelativeLayout.class),
+            new UiUtils.ClassMatcher(android.widget.RelativeLayout.class),
+            new UiUtils.ClassMatcher(android.widget.ImageView.class),
+//            new UiUtils.ClassMatcher(android.widget.RelativeLayout.class),
+//            new UiUtils.ClassMatcher(android.widget.LinearLayout.class),
+//            new UiUtils.ClassNameMatcher("com.tencent.mobileqq.widget.QVipMedalView")
     };
 
     private static final UiUtils.Matcher[] TAB_ELEMENT_CHAIN = new UiUtils.Matcher[] {
@@ -55,6 +63,7 @@ class LayoutBlocker {
         blockTabs(view);
         blockMiniApps(view);
         blockCamera(view);
+        blockPlay(view);
 
         return view;
     }
@@ -66,9 +75,7 @@ class LayoutBlocker {
     }
 
     private void blockTabs(View view) {
-        View[] chains = UiUtils.matchChain(TAB_CHAIN, view);
-
-        if (chains != null) {
+        UiUtils.walk(TAB_CHAIN, view, (chains) -> {
             View v = chains[chains.length-1];
 
             if (v instanceof ViewGroup) {
@@ -93,7 +100,7 @@ class LayoutBlocker {
                     }
                 });
             }
-        }
+        });
     }
 
     private void blockCamera(View view) {
@@ -101,10 +108,20 @@ class LayoutBlocker {
             ImageView imageView = (ImageView) chains[chains.length-1];
 
             if ( imageView.getContentDescription() != null && CAMERA_DESCRIPTION.contentEquals(imageView.getContentDescription()) ) {
-                Log.d(Constants.TAG, "Matched");
-
                 chains[chains.length-1].setLayoutParams(new RelativeLayout.LayoutParams(0, 0));
             }
+        });
+    }
+
+    private void blockPlay(View view) {
+        final AtomicBoolean finished = new AtomicBoolean(false);
+
+        UiUtils.walk(PLAY_CHAIN, view, (chains) -> {
+            if ( finished.getAndSet(true) ) return;
+
+            ImageView imageView = (ImageView) chains[chains.length-1];
+
+            imageView.setLayoutParams(new RelativeLayout.LayoutParams(0, 0));
         });
     }
 }
