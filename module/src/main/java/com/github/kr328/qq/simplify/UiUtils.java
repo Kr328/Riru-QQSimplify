@@ -5,8 +5,118 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import java.util.ArrayList;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 
-public class UiUtils {
+public final class UiUtils {
+    interface Matcher {
+        boolean match(View view);
+    }
+
+    static class ClassMatcher implements Matcher {
+        final Class<?> clazz;
+
+        ClassMatcher(Class<?> clazz) {
+            this.clazz = clazz;
+        }
+
+        @Override
+        public boolean match(View view) {
+            return clazz.isAssignableFrom(view.getClass());
+        }
+    }
+
+    static class ClassNameMatcher implements Matcher {
+        final String name;
+
+        ClassNameMatcher(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public boolean match(View view) {
+            return name.equals(view.getClass().getName());
+        }
+    }
+
+    static class AndMatcher implements Matcher {
+        final Matcher[] matchers;
+
+        AndMatcher(Matcher ...matchers) {
+            this.matchers = matchers;
+        }
+
+        @Override
+        public boolean match(View view) {
+            return Stream.of(matchers).allMatch(m -> m.match(view));
+        }
+    }
+
+    static View[] matchChain(Matcher[] chain, View view) {
+        if ( !chain[0].match(view) )
+            return null;
+
+        View[] result = new View[chain.length];
+
+        result[0] = view;
+
+        for ( int current = 1; current < chain.length ; current++ ) {
+            if (!(view instanceof ViewGroup))
+                return null;
+
+            ViewGroup group = (ViewGroup) view;
+            Matcher matcher = chain[current];
+
+            boolean matched = false;
+
+            for ( int i = 0 ; i < group.getChildCount() ; i++ ) {
+                if ( matcher.match(group.getChildAt(i)) ) {
+                    view = group.getChildAt(i);
+                    result[current] = view;
+                    matched = true;
+                    break;
+                }
+            }
+
+            if ( !matched )
+                return null;
+        }
+
+        return result;
+    }
+
+    static void walk(Matcher[] chains, View root, Consumer<View[]> consumer) {
+        if ( !chains[0].match(root) )
+            return;
+
+        View[] cache = new View[chains.length];
+
+        cache[0] = root;
+
+        walk(chains, root, consumer, cache, 1);
+    }
+
+    private static void walk(Matcher[] chains, View view, Consumer<View[]> consumer, View[] cache, int offset) {
+        if ( offset == chains.length ) {
+            consumer.accept(cache);
+            return;
+        }
+
+        if (!(view instanceof ViewGroup))
+            return;
+
+        ViewGroup group = (ViewGroup) view;
+
+        for ( int i = 0 ; i < group.getChildCount() ; i++ ) {
+            View v = group.getChildAt(i);
+
+            if ( chains[offset].match(v) ) {
+                cache[offset] = v;
+                walk(chains, group.getChildAt(i), consumer, cache, offset + 1);
+            }
+        }
+    }
+
     @SuppressWarnings("unchecked")
     static <T> ArrayList<T> findViewByType(View view, Class<T> clazz, int deep) {
         ArrayList<T> result = new ArrayList<>(0);
@@ -28,66 +138,30 @@ public class UiUtils {
         return result;
     }
 
-    @SuppressWarnings("unchecked")
-    static <T> ArrayList<T> findViewByClassName(View view, String clazz, int deep) {
-        ArrayList<T> result = new ArrayList<>(0);
-
-        if ( deep <= 0 )
-            return result;
-
-        if ( clazz.equals(view.getClass().getName()) )
-            result.add((T) view);
-
-        if (!( view instanceof ViewGroup) )
-            return result;
-
-        ViewGroup vg = (ViewGroup) view;
-
-        for ( int i = 0 ; i < vg.getChildCount() ; i++ )
-            result.addAll(findViewByClassName(vg.getChildAt(i), clazz, deep - 1));
-
-        return result;
-    }
-
-    @SuppressWarnings("unchecked")
-    static ArrayList<ViewGroup> findParentViewByClassName(View root, String clazz ,int deep) {
-        ArrayList<ViewGroup> result = new ArrayList<>(0);
-
-        if ( deep <= 0 )
-            return result;
-
-        if (!( root instanceof ViewGroup) )
-            return result;
-
-        ViewGroup vg = (ViewGroup) root;
-
-        for ( int i = 0 ; i < vg.getChildCount() ; i++ ) {
-            View v = vg.getChildAt(i);
-
-            if ( clazz.equals(v.getClass().getName()) )
-                result.add(vg);
-
-            result.addAll(findParentViewByClassName(v, clazz, deep - 1));
-        }
-
-        return result;
-    }
-
-    static void attachAllClickListener(View root, View.OnClickListener listener, int deep) {
-        if (!( root instanceof ViewGroup) )
+    static void attachAllLayoutChanged(View view, ViewGroup.OnHierarchyChangeListener listener) {
+        if (!( view instanceof ViewGroup))
             return;
 
-        ViewGroup vg = (ViewGroup) root;
+        ViewGroup group = (ViewGroup) view;
 
-        for ( int i = 0 ; i < vg.getChildCount() ; i++ ) {
-            View v = vg.getChildAt(i);
+        group.setOnHierarchyChangeListener(listener);
 
-            attachAllClickListener(v, listener, deep - 1);
+        for ( int i = 0 ; i < group.getChildCount(); i++) {
+            attachAllLayoutChanged(group.getChildAt(i), listener);
+        }
+    }
 
-            try {
-                v.setOnClickListener(listener);
-            } catch (Exception e) {
-                Log.d(Constants.TAG, v.toString());
+    static void dumpView(View root, String padding) {
+        if ( root == null )
+            return;
+
+        Log.d(Constants.TAG, padding + root.getClass().getName());
+
+        if ( root instanceof ViewGroup ) {
+            ViewGroup group = (ViewGroup) root;
+
+            for ( int i = 0 ; i < group.getChildCount() ; i++ ) {
+                dumpView(group.getChildAt(i), padding + " ");
             }
         }
     }
