@@ -19,7 +19,7 @@
 
 ### 构建
 
-1. 安装 JDK ,Gradle ,Android SDK ,Android NDK
+1. 安装 JDK, Android SDK, Android NDK
 
 2. 创建文件 `local.properties` 在项目根目录
    ```properties
@@ -33,5 +33,5 @@
    ./gradlew module:assembleRelease
    ```
 
-4. 在 module/build/outputs 获取 riru-qq-simplify-release.zip 
+4. 在 `module/build/outputs` 获取 `riru-qq-simplify-release.zip` 
 
